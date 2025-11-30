@@ -102,6 +102,7 @@ int main()
 
             drawLines(lines, points, window);
             drawPoints(points, window);
+			drawLabels(points, window);
         } 
 
         window.display();

@@ -3,9 +3,17 @@
 #include <algorithm>
 #include <cmath>
 
+sf::Font globalFont;
+bool fontLoaded = false;
+
+float LABEL_OFFSET_X = 3.0f;
+float LABEL_OFFSET_Y = -3.0f;
+const unsigned int FONT_SIZE = 12;
+
 // --- Допоміжна Структура ---
 struct ScaleInfo {
-    double scale;
+    double scaleX;
+	double scaleY;
     double minX;
     double minY;
     double centerX; // Додаємо центр даних для зміщення
@@ -33,28 +41,30 @@ ScaleInfo getScaleAndBounds(const std::vector<Point>& points, double windowSizeX
     double centerX = (minX + maxX) / 2.0;
     double centerY = (minY + maxY) / 2.0;
 
-    // Максимальний діапазон для збереження пропорцій
-    double maxRange = std::max(rangeX, rangeY);
 
     // Якщо дані займають лише одну точку або занадто малий діапазон
-    if (maxRange < 1e-6) {
+	if (rangeX < 1e-6 && rangeY < 1e-6) {
         return { 1.0, minX, minY, centerX, centerY };
     }
 
-    // Ми хочемо, щоб найбільший діапазон (maxRange) був відмасштабований
-    // до 90% від розміру вікна. Але оскільки центр (0,0), робочий діапазон SFML
-    // тепер [-(window/2), +(window/2)].
+    else if (rangeX < 1e-6) {
+        rangeX = rangeY;
+    }
+	else if (rangeY < 1e-6) {
+        rangeY = rangeX;
+	}
 
-    // Тому ми масштабуємо від maxRange до (windowSize / 2.0),
-    // що гарантує, що фігура впишеться.
+
     const double targetViewSize = std::min(windowSizeX, windowSizeY) / 2.0;
     const double paddingFactor = 0.9;
 
     // Розраховуємо, скільки пікселів SFML відповідає одній одиниці даних.
-    double scale = (targetViewSize * paddingFactor) / (maxRange / 2.0);
-    // Примітка: ділення maxRange на 2.0 потрібне, оскільки range від -Center до +Center.
+    double scaleX = ((windowSizeX / 2.0) * paddingFactor) / (rangeX / 2.0);
+    double scaleY = ((windowSizeY / 2.0) * paddingFactor) / (rangeY / 2.0);
+    if (scaleX > scaleY * 2) scaleX = scaleY * 2;
+    else if (scaleY > scaleX * 2) scaleY = scaleX * 2;
 
-    return { scale, minX, minY, centerX, centerY };
+    return { scaleX, scaleY, minX, minY, centerX, centerY };
 }
 
 sf::Vector2f transformPoint(const Point& p, const ScaleInfo& info, double scaleX, double scaleY) {
@@ -86,17 +96,22 @@ void drawPoints(const std::vector<Point>& points, sf::RenderWindow& window)
 
     // Отримуємо спільний масштаб та межі
     ScaleInfo scaleData = getScaleAndBounds(points, width, height);
-    double sharedScale = scaleData.scale; // Єдиний коефіцієнт
+    double sharedScaleX = scaleData.scaleX;
+	double sharedScaleY = scaleData.scaleY;
 
     for (const auto& p : points) {
-        sf::CircleShape shape(5);
-        shape.setFillColor(sf::Color::Red);
 
-        // Передаємо єдиний коефіцієнт як scaleX та scaleY
-        sf::Vector2f pos = transformPoint(p, scaleData, sharedScale, sharedScale);
+        float radius = std::max(static_cast<float>(p.getSize() * (std::min(sharedScaleX, sharedScaleY) / 2.5)), 3.0f);
+        sf::CircleShape shape(radius);
 
-        // Зверніть увагу: радіус 5 буде виглядати малим. Можливо, варто масштабувати радіус
-        // або використовувати фіксований розмір, незалежний від масштабу даних.
+        float outlineOffset = std::max(static_cast<float>(p.getOutlineSize() * (std::min(sharedScaleX, sharedScaleY) / 2.5)), 1.0f);
+		shape.setOutlineThickness(outlineOffset);
+
+        shape.setFillColor(p.getColor());
+		shape.setOutlineColor(p.getOutlineColor());
+
+        sf::Vector2f pos = transformPoint(p, scaleData, sharedScaleX, sharedScaleY);
+
         shape.setPosition(sf::Vector2f(pos.x - shape.getRadius(), pos.y - shape.getRadius()));
         window.draw(shape);
     }
@@ -111,18 +126,56 @@ void drawLines(const std::vector<Line>& lines, const std::vector<Point>& points,
 
     // Отримуємо спільний масштаб та межі
     ScaleInfo scaleData = getScaleAndBounds(points, width, height);
-    double sharedScale = scaleData.scale; // Єдиний коефіцієнт
+    double sharedScaleX = scaleData.scaleX;
+	double sharedScaleY = scaleData.scaleY;
 
     for (const auto& line : lines) {
         sf::Vertex vertices[2];
 
         // Перетворюємо точки, використовуючи спільний масштаб
-        vertices[0].position = transformPoint(line.getStart(), scaleData, sharedScale, sharedScale);
-        vertices[0].color = sf::Color::Black;
+        vertices[0].position = transformPoint(line.getStart(), scaleData, sharedScaleX, sharedScaleY);
+        vertices[0].color = line.getColor();
 
-        vertices[1].position = transformPoint(line.getEnd(), scaleData, sharedScale, sharedScale);
-        vertices[1].color = sf::Color::Black;
+        vertices[1].position = transformPoint(line.getEnd(), scaleData, sharedScaleX, sharedScaleY);
+        vertices[1].color = line.getColor();
 
-        window.draw(vertices, 2, sf::PrimitiveType::Lines);
+        window.draw(vertices, line.getBoldness(), sf::PrimitiveType::Lines);
+    }
+}
+
+void drawLabels(const std::vector<Point>& points, sf::RenderWindow& window) {
+    if (points.empty()) return;
+
+    if (!fontLoaded) {  
+        if (!globalFont.openFromFile("arial.ttf")) {
+            std::cerr << "Error loading font! The labels will not be displayed." << std::endl;
+            return;
+        }
+        fontLoaded = true;
+    }
+
+    double width = static_cast<double>(window.getSize().x);
+    double height = static_cast<double>(window.getSize().y);
+
+    ScaleInfo scaleData = getScaleAndBounds(points, width, height);
+    double sharedScaleX = scaleData.scaleX;
+    double sharedScaleY = scaleData.scaleY;
+
+    for (const auto& p : points) {
+        if (p.getName().empty()) {
+            continue;
+        }
+
+        sf::Vector2f pos = transformPoint(p, scaleData, sharedScaleX, sharedScaleY);
+
+        sf::Text labelText(globalFont);
+        float size = std::max(static_cast<float>(FONT_SIZE * (std::min(sharedScaleX, sharedScaleY) / 2.5)), 12.f);
+        labelText.setString(p.getName());
+        labelText.setCharacterSize(size);
+        labelText.setFillColor(sf::Color::Black);
+
+        labelText.setPosition(sf::Vector2f(pos.x + (LABEL_OFFSET_X * (sharedScaleX/2.5)), pos.y - (LABEL_OFFSET_Y * (sharedScaleY / 2.5))));
+
+        window.draw(labelText);
     }
 }
