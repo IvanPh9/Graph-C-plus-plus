@@ -4,6 +4,7 @@
 #include "Line.h"
 #include "FileProcesses.h"
 #include "WindowDraw.h"
+#include "Interface.h"
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -11,62 +12,14 @@
 #include <mutex>  // Для синхронізації даних
 #include <atomic> // Для безпечного прапорця завершення
 
-#define FILEPOINTS "points.txt"
-#define FILELINES "lines.txt"
 
 using namespace std;
-
-mutex dataMutex;
-atomic<bool> isRunning(true);
-
-void consoleProcess(vector<Point>& points, vector<Line>& lines) {
-    while (isRunning) {
-        cout << "\n--- Menu ---\n";
-        cout << "1. Show current points info\n";
-        cout << "2. Add dummy point (Example dynamic update)\n";
-        cout << "3. Exit console loop\n";
-        cout << "Enter command: ";
-
-        int command;
-        if (cin >> command) {
-            if (command == 1) {
-
-                lock_guard<mutex> lock(dataMutex);
-                cout << "\nCurrent Points:\n";
-                for (const auto& p : points) {
-                    cout << p << endl;
-                }
-            }
-            else if (command == 2) {
-
-                double x, y;
-                string name;
-                cout << "Enter X Y Name: ";
-                cin >> x >> y >> name;
-
-                lock_guard<mutex> lock(dataMutex);
-                points.emplace_back(x, y, name);
-                cout << "Point added! Check the window.\n";
-            }
-            else if (command == 3) {
-                break;
-            }
-        }
-        else {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
-    }
-    cout << "Console thread finished.\n";
-}
 
 int main()
 {
     vector<Line> lines;
     vector<Point> points;
 
-    loadPointsFromFile(FILEPOINTS, points);
-    loadLinesFromFile(FILELINES, lines, points);
 
     sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "SFML Multithreading");
 
@@ -75,7 +28,7 @@ int main()
     view.setSize(sf::Vector2f(800.f, 600.f));
     window.setView(view);
 
-    thread consoleThread(consoleProcess, ref(points), ref(lines));
+    thread consoleThread(MainInterface, ref(points), ref(lines));
 
     while (window.isOpen())
     {
@@ -102,7 +55,8 @@ int main()
 
             drawLines(lines, points, window);
             drawPoints(points, window);
-			drawLabels(points, window);
+			if (LABEL_SHOW) drawLabels(points, window);
+			if (WEIGHT_SHOW) drawEdgeWeights(lines, points, window);
         } 
 
         window.display();

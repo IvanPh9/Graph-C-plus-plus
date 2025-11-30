@@ -133,6 +133,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DijkstraAlgorithm.cpp" />
+    <ClCompile Include="ImplementationAlgorithm.cpp" />
+    <ClCompile Include="Interface.cpp" />
+    <ClCompile Include="ValidationAdd.cpp" />
     <ClCompile Include="WindowDraw.cpp" />
     <ClCompile Include="FileProcesses.cpp" />
     <ClCompile Include="Line.cpp" />
@@ -140,6 +143,9 @@
     <ClCompile Include="Point.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ImplementationAlgorithm.h" />
+    <ClInclude Include="Interface.h" />
+    <ClInclude Include="ValidationAdd.h" />
     <ClInclude Include="WindowDraw.h" />
     <ClInclude Include="FileProcesses.h" />
     <ClInclude Include="Line.h" />

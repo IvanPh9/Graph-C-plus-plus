@@ -6,7 +6,7 @@ using namespace std;
 
 ostream& operator<<(ostream& os, const Point& point)
 {
-    os << "Point(" << point.x << ", " << point.y << ", " << point.name << ")";
+    os << point.name << "\t" << point.x << "\t" << point.y;
     return os;
 }
 
@@ -26,12 +26,12 @@ istream& operator>>(istream& in, Point& point)
 
 bool operator==(const Point& p1, const Point& p2)
 {
-    return (p1.x == p2.x) && (p1.y == p2.y);
+    return ((p1.x == p2.x) && (p1.y == p2.y)) || (p1.name == p2.name);
 }
 
 ostream& operator<<(ostream& os, const Line& line)
 {
-    os << "Line "<< line.start.getName() << line.end.getName() << " (Start: " << line.start << ", End: " << line.end << ", Weight: " << line.weight << ")";
+	os << line.start.getName() << "\t->\t" << line.end.getName() << " \t" << line.weight;
     return os;
 }
 

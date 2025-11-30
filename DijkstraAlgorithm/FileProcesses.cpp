@@ -4,15 +4,9 @@
 #include <vector>
 #include <cctype>
 #include <fstream>
+#include "ValidationAdd.h"
 
 using namespace std;
-
-bool isFirstCharAlpha(const std::string& name) {
-    if (name.empty()) {
-        return false;
-    }
-    return std::isalpha(static_cast<unsigned char>(name[0]));
-}
 
 bool loadPointsFromFile(const std::string& filename, std::vector<Point>& points) {
     std::ifstream in(filename);
@@ -25,22 +19,7 @@ bool loadPointsFromFile(const std::string& filename, std::vector<Point>& points)
     Point p(0.0, 0.0, "");
     while (!in.eof()) {
         if (in >> p) {
-            bool found = false;
-
-            if (!isFirstCharAlpha(p.getName())) {
-                cout << "Line Error: First character of Point name must be letter (" << filename << ")" << endl;
-                continue;
-            }
-
-            for (const auto& existingP : points) {
-                if (existingP == p) {
-                    found = true;
-                    cout << "Line Error: Point Exist (" << filename << ")" << endl;
-                    break;
-                }
-            }
-
-            if (!found) {
+			if (validateNewPoint(p, points)) {
                 points.push_back(p);
             }
         }
@@ -74,22 +53,9 @@ bool loadLinesFromFile(const std::string& filename, std::vector<Line>& lines, st
         if (in >> startName >> endName >> weight) {
             Point* start = nullptr;
             Point* end = nullptr;
-            if (startName == endName) {
-                cout << "Line Error: Start and End points are the same (" << filename << ")" << endl;
+           if (!validateNewLine(startName, endName, weight, lines, points)) {
                 continue;
-			}
-            else if (weight < 0) {
-                cout << "Line Error: Weight cannot be negative (" << filename << ")" << endl;
-                continue;
-            }
-            else if (startName == "" || endName == "") {
-                cout << "Line Error: Point names cannot be empty (" << filename << ")" << endl;
-                continue;
-			}
-            else if (!isFirstCharAlpha(startName) && !isFirstCharAlpha(endName)) {
-                cout << "Line Error: First character of Point name must be letter (" << filename << ")" << endl;
-                continue;
-            }
+		   }
             for (auto& a : points) {
                 if (a.getName() == startName) {
                     start = &a;

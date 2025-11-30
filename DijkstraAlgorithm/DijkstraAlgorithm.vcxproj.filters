@@ -33,6 +33,15 @@
     <ClCompile Include="WindowDraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Interface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplementationAlgorithm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ValidationAdd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Point.h">
@@ -45,6 +54,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WindowDraw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ValidationAdd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplementationAlgorithm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
