@@ -1,0 +1,41 @@
+#include <iostream>
+#include "Point.h"
+#include "Line.h"
+
+using namespace std;
+
+ostream& operator<<(ostream& os, const Point& point)
+{
+    os << "Point(" << point.x << ", " << point.y << ", " << point.name << ")";
+    return os;
+}
+
+istream& operator>>(istream& in, Point& point)
+{
+    double x, y;
+    string name;
+
+    if (in >> x >> y >> name) {
+        point.setX(x);
+        point.setY(y);
+        point.setName(name);
+    }
+    return in;
+}
+
+
+bool operator==(const Point& p1, const Point& p2)
+{
+    return (p1.x == p2.x) && (p1.y == p2.y);
+}
+
+ostream& operator<<(ostream& os, const Line& line)
+{
+    os << "Line "<< line.start.getName() << line.end.getName() << " (Start: " << line.start << ", End: " << line.end << ", Weight: " << line.weight << ")";
+    return os;
+}
+
+bool operator==(const Line& l1, const Line& l2)
+{
+    return (l1.start == l2.start) && (l1.end == l2.end) && (l1.weight == l2.weight);
+}
