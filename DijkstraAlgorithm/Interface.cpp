@@ -14,6 +14,7 @@ using namespace std;
 
 mutex dataMutex;
 atomic<bool> isRunning(true);
+int ANIMATION_DELAY = 0;
 
 void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 {
@@ -181,10 +182,7 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 				// Викликаємо алгоритм без блокування на тривалий час (findShortestPath може читати контейнер)
 				// Якщо findShortestPath потребує консистентності, можна тримати lock під час виклику.
 				double path;
-				{
-					lock_guard<mutex> lock(dataMutex);
-					path = findShortestPath(points, lines);
-				}
+				path = findShortestPath(points, lines);
 
 				if (path == 0) {
 					cout << "No path found" << endl;
@@ -205,22 +203,30 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 				cout << "Settings menu: \n";
 				cout << " - 1. Toggle point labels display\n";
 				cout << " - 2. Toggle edge weights display\n";
+				cout << " - 3. Set animation delay (current: " << ANIMATION_DELAY << " ms)\n"; // Новий пункт
 				cout << "Enter command: ";
 				int settingCommand;
 				cin >> settingCommand;
 				switch (settingCommand) {
-					case 1: {
-						LABEL_SHOW = !LABEL_SHOW;
-						cout << "Point labels display is now " << (LABEL_SHOW ? "ON" : "OFF") << ".\n";
-						break;
-					}
-					case 2: {
-						WEIGHT_SHOW = !WEIGHT_SHOW;
-						cout << "Edge weights display is now " << (WEIGHT_SHOW ? "ON" : "OFF") << ".\n";
-						break;
-					}
-					default:
-						cout << "Invalid settings command. Please try again.\n";
+				case 1: {
+					LABEL_SHOW = !LABEL_SHOW;
+					cout << "Point labels display is now " << (LABEL_SHOW ? "ON" : "OFF") << ".\n";
+					break;
+				}
+				case 2: {
+					WEIGHT_SHOW = !WEIGHT_SHOW;
+					cout << "Edge weights display is now " << (WEIGHT_SHOW ? "ON" : "OFF") << ".\n";
+					break;
+				}
+				case 3: { // Нова логіка
+					cout << "Enter delay in milliseconds (e.g. 0 for instant, 500 for slow): ";
+					cin >> ANIMATION_DELAY;
+					if (ANIMATION_DELAY < 0) ANIMATION_DELAY = 0;
+					cout << "Animation delay set to " << ANIMATION_DELAY << " ms.\n";
+					break;
+				}
+				default:
+					cout << "Invalid settings command.\n";
 				}
 				break;
 			}
