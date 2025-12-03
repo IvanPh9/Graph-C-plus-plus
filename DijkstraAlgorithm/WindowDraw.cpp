@@ -6,9 +6,6 @@
 #define M_PI 3.14159265358979323846
 
 const double MAX_SCALE_ELEMENTS = 3.0;
-const double MIN_RANGE = 15;
-const float MAX_POINT_RADIUS = 15.0f;
-const float MIN_POINT_RADIUS = 3.0f;
 const double paddingFactor = 0.9;
 
 sf::Font globalFont;
@@ -17,8 +14,8 @@ bool fontLoaded = false;
 float LABEL_OFFSET_X = 5.0f;
 float LABEL_OFFSET_Y = -5.0f;
 
-const unsigned int FONT_SIZE = 12;
-const unsigned int WEIGHT_FONT_SIZE = 10;
+const unsigned int FONT_SIZE = 24;
+const unsigned int WEIGHT_FONT_SIZE = 20;
 
 bool LABEL_SHOW = true;
 bool WEIGHT_SHOW = true;
@@ -60,17 +57,17 @@ ScaleInfo getScaleAndBounds(const std::vector<Point>& points, double windowSizeX
 
 
     if (rangeX < 1e-6 && rangeY < 1e-6) {
-        rangeX = MIN_RANGE;
-        rangeY = MIN_RANGE;
+        rangeX = 1;
+        rangeY = 1;
     }
     else if (rangeX < 1e-6 || rangeY < 1e-6) {
 
-        rangeX = std::max(rangeX, MIN_RANGE);
-        rangeY = std::max(rangeY, MIN_RANGE);
+        rangeX = std::max(rangeX, 1.);
+        rangeY = std::max(rangeY, 1.);
     }
 
-    rangeX = std::max(rangeX, MIN_RANGE);
-    rangeY = std::max(rangeY, MIN_RANGE);
+    rangeX = std::max(rangeX, 1.);
+    rangeY = std::max(rangeY, 1.);
 
     double targetViewSize = std::min(windowSizeX, windowSizeY) / 2.0;
 
@@ -80,7 +77,9 @@ ScaleInfo getScaleAndBounds(const std::vector<Point>& points, double windowSizeX
     if (scaleX > scaleY * 2) scaleX = scaleY * 2;
     else if (scaleY > scaleX * 2) scaleY = scaleX * 2;
 
-    double visualScale = std::min(std::min(scaleX, scaleY) / 2.7, MAX_SCALE_ELEMENTS);
+
+    double windowFactor = std::min(windowSizeX, windowSizeY) / 100.0;
+    double visualScale = 0.2 * windowFactor;
 
     return { scaleX, scaleY, minX, minY, centerX, centerY, visualScale };
 }
@@ -106,19 +105,19 @@ void drawPoints(const std::vector<Point>& points, sf::RenderWindow& window)
     ScaleInfo scaleData = getScaleAndBounds(points, width, height);
     double sharedScaleX = scaleData.scaleX;
 	double sharedScaleY = scaleData.scaleY;
-    double visualScale = scaleData.visualScale;
+    double visualScale = scaleData.visualScale * 0.7;
 
     for (const auto& p : points) {
 
         // Обчислюємо радіус
         float calculatedRadius = static_cast<float>(p.getSize() * visualScale);
 
-        float radius = std::max(std::min(calculatedRadius, MAX_POINT_RADIUS), MIN_POINT_RADIUS);
+        float radius = std::max(std::min(calculatedRadius, static_cast<float>(p.getSize())), 3.0f);
 
         sf::CircleShape shape(radius);
 
         float calculatedOutlineOffset = static_cast<float>(p.getOutlineSize() * visualScale);
-        float outlineOffset = std::max(std::min(calculatedOutlineOffset, MAX_POINT_RADIUS / 4.0f), 1.0f);
+        float outlineOffset = std::max(std::min(calculatedOutlineOffset, static_cast<float>(p.getOutlineSize())), 1.0f);
         shape.setOutlineThickness(outlineOffset);
 
         shape.setFillColor(p.getColor());
@@ -153,7 +152,9 @@ void drawLines(const std::vector<Line>& lines, const std::vector<Point>& points,
         float lineLength = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
         // 2. Створити прямокутник, який буде лінією
-        sf::RectangleShape rect(sf::Vector2f(lineLength, line.getBoldness())); // line.getBoldness() як товщина
+		float calculatedBoldness = static_cast<float>(line.getBoldness() * visualScale);
+		float boldness = std::max(std::min(calculatedBoldness, static_cast<float>(line.getBoldness())), 1.0f);
+        sf::RectangleShape rect(sf::Vector2f(lineLength, boldness)); // line.getBoldness() як товщина
 
         // 3. Встановити колір
         rect.setFillColor(line.getColor());
@@ -200,12 +201,12 @@ void drawLabels(const std::vector<Point>& points, sf::RenderWindow& window) {
         sf::Vector2f pos = transformPoint(p, scaleData, sharedScaleX, sharedScaleY);
 
         sf::Text labelText(globalFont);
-        float size = std::max(static_cast<float>(FONT_SIZE * visualScale), static_cast<float>(FONT_SIZE));
+        float size = std::max(std::min(static_cast<float>(FONT_SIZE * visualScale), static_cast<float>(FONT_SIZE)), FONT_SIZE / 3.0f);
         labelText.setString(p.getName());
         labelText.setCharacterSize(size);
         labelText.setFillColor(sf::Color::Black);
 
-        float offsetFactor = static_cast<float>(std::min(sharedScaleX, sharedScaleY) / 2.5);
+        float offsetFactor = static_cast<float>(visualScale / 2.5);
         offsetFactor = std::min(offsetFactor, static_cast<float>(MAX_SCALE_ELEMENTS));
 
         labelText.setPosition(sf::Vector2f(pos.x + (LABEL_OFFSET_X * offsetFactor), pos.y - (LABEL_OFFSET_Y * offsetFactor)));
@@ -258,7 +259,7 @@ void drawEdgeWeights(const std::vector<Line>& lines, const std::vector<Point>& p
         sf::Text weightText(globalFont);
 
         // Масштабуємо розмір шрифту відповідно до загального масштабу графу
-        float size = std::max(static_cast<float>(WEIGHT_FONT_SIZE * visualScale), static_cast<float>(WEIGHT_FONT_SIZE));
+        float size = std::max(std::min(static_cast<float>(WEIGHT_FONT_SIZE * visualScale), static_cast<float>(WEIGHT_FONT_SIZE)), WEIGHT_FONT_SIZE / 3.0f);
 
         std::string s = formatWeightString(line.getWeight());
 		weightText.setString(s);

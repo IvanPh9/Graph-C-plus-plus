@@ -11,7 +11,7 @@ private:
 	double boldness;
 	bool isInPath;
 public:
-	Line(const Point& start, const Point& end, double weight) : start(start), end(end), weight(weight), color(sf::Color(110, 110, 110)), boldness(2.0), isInPath(false) {}
+	Line(const Point& start, const Point& end, double weight);
 	Point getStart() const { return start; }
 	Point getEnd() const { return end; }
 	double getWeight() const { return weight; }
@@ -22,8 +22,8 @@ public:
 	void setStart(Point p) { start = p; }
 	void setEnd(Point p) { end = p; }
 	void setWeight(double w) { weight = w; }
-	void setColor(const sf::Color& c) { color = c; }
-	void setBoldness(double b) { boldness = b; }
+	void setColor(const sf::Color& newColor =sf::Color(110, 110, 110), bool change = false);
+	void setBoldness(double b = 2, bool change = false);
 	void setIsInPath(bool inPath);
 
 	double calculateLength() const;

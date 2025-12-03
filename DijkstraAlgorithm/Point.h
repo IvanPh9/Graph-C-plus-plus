@@ -18,8 +18,8 @@ private:
 	bool isStartPoint;
 	bool isEndPoint;
 public:
-	Point(double x, double y, const string& name) : x(x), y(y), name(name), color(sf::Color(210, 210, 210)), outlineColor(sf::Color::Black), size(5.0), outlineSize(2.2), isStartPoint(false), isEndPoint(false) {}
-	Point(const Point& p) : x(p.x), y(p.y), name(p.name), color(p.color), outlineColor(p.outlineColor), size(p.size), outlineSize(p.outlineSize), isStartPoint(false), isEndPoint(false) {}
+	Point(double x, double y, const string& name);
+	Point(const Point& p);
 	double getX() const { return x; }
 	double getY() const { return y; }
 	string getName() const { return name; }
@@ -33,7 +33,7 @@ public:
 	void setX(double newX) { x = newX; }
 	void setY(double newY) { y = newY; }
 	void setName(const string& newName) { name = newName; }
-	void setColor(const sf::Color& newColor) { color = newColor; }
+	void setColor(const sf::Color& newColor = sf::Color(210, 210, 210), bool change=false);
 	void setOutlineColor(const sf::Color& newOutlineColor) { outlineColor = newOutlineColor; }
 	void setSize(double newSize) { size = newSize; }
 	void setOutlineSize(double newOutlineSize) { outlineSize = newOutlineSize; }
