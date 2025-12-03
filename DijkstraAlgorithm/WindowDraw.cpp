@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 
+#define M_PI 3.14159265358979323846
+
 const double MAX_SCALE_ELEMENTS = 3.0;
 const double MIN_RANGE = 15;
 const float MAX_POINT_RADIUS = 15.0f;
@@ -143,16 +145,31 @@ void drawLines(const std::vector<Line>& lines, const std::vector<Point>& points,
 	double visualScale = scaleData.visualScale;
 
     for (const auto& line : lines) {
-        sf::Vertex vertices[2];
+        sf::Vector2f startPos = transformPoint(line.getStart(), scaleData, sharedScaleX, sharedScaleY);
+        sf::Vector2f endPos = transformPoint(line.getEnd(), scaleData, sharedScaleX, sharedScaleY);
 
-        // Перетворюємо точки, використовуючи спільний масштаб
-        vertices[0].position = transformPoint(line.getStart(), scaleData, sharedScaleX, sharedScaleY);
-        vertices[0].color = line.getColor();
+        // 1. Обчислити довжину лінії
+        sf::Vector2f direction = endPos - startPos;
+        float lineLength = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-        vertices[1].position = transformPoint(line.getEnd(), scaleData, sharedScaleX, sharedScaleY);
-        vertices[1].color = line.getColor();
+        // 2. Створити прямокутник, який буде лінією
+        sf::RectangleShape rect(sf::Vector2f(lineLength, line.getBoldness())); // line.getBoldness() як товщина
 
-        window.draw(vertices, line.getBoldness(), sf::PrimitiveType::Lines);
+        // 3. Встановити колір
+        rect.setFillColor(line.getColor());
+
+        // 4. Встановити позицію та обертання
+        rect.setPosition(startPos);
+
+        // Обчислити кут обертання
+        sf::Angle angle = sf::degrees(std::atan2(direction.y, direction.x) * 180.f / static_cast<float>(M_PI));
+        rect.setRotation(angle);
+
+        // Зсув, щоб лінія була центрована по товщині (за замовчуванням обертання відбувається навколо (0,0))
+        rect.setOrigin(sf::Vector2f(0.0f, line.getBoldness() / 2.0f));
+
+        // 5. Намалювати
+        window.draw(rect);
     }
 }
 

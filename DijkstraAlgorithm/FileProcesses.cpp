@@ -8,13 +8,14 @@
 
 using namespace std;
 
-bool loadPointsFromFile(const std::string& filename, std::vector<Point>& points) {
+bool loadPointsFromFile(const std::string& filename, std::vector<Point>& points, std::vector<Line>& lines) {
     std::ifstream in(filename);
     if (!in.is_open()) {
         return false;
     }
 
     points.clear();
+	lines.clear();
 
     Point p(0.0, 0.0, "");
     while (!in.eof()) {

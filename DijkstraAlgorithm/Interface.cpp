@@ -2,6 +2,7 @@
 #include "ValidationAdd.h"
 #include "FileProcesses.h"
 #include "WindowDraw.h"
+#include "ImplementationAlgorithm.h"
 #include <vector>
 #include <mutex>
 #include <atomic>
@@ -24,8 +25,8 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
         cout << " - 3.  Add point\n";
 		cout << " - 4.  Add line\n";
 		cout << "-------------------\n";
-		cout << " - 5.  Update point\n";
-		cout << " - 6.  Update line\n";
+		cout << " - 5.  Flag start point\n";
+		cout << " - 6.  Flag end point\n";
 		cout << "-------------------\n";
         cout << " - 7.  Show current points info\n";
 		cout << " - 8.  Show current lines info\n";
@@ -50,7 +51,7 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 				cout << "Enter filename: ";
 				string filename;
 				cin >> filename;
-				if (loadPointsFromFile(filename, points)) {
+				if (loadPointsFromFile(filename, points, lines)) {
 					cout << "Points loaded successfully from file." << endl;
 				}
 				else {
@@ -113,6 +114,42 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 				}
 				break;
 			}
+			case 5: {
+				lock_guard<mutex> lock(dataMutex);
+				cout << "Enter start point name: ";
+				string startName;
+				cin >> startName;
+				for (auto& p : points) {
+					p.setIsStartPoint(false);
+				}
+				for (auto& p : points) {
+					if (p.getName() == startName) {
+						p.setIsStartPoint(true);
+						cout << "Start point flagged successfully." << endl;
+						break;
+					}
+				}
+				cout << "No such point found." << endl;
+				break;
+			}
+			case 6: {
+				lock_guard<mutex> lock(dataMutex);
+				cout << "Enter end point name: ";
+				string endName;
+				cin >> endName;
+				for (auto& p : points) {
+					p.setIsEndPoint(false);
+				}
+				for (auto& p : points) {
+					if (p.getName() == endName) {
+						p.setIsEndPoint(true);
+						cout << "End point flagged successfully." << endl;
+						break;
+					}
+				}
+				cout << "No such point found." << endl;
+				break;
+			}
 			case 7: {
 				lock_guard<mutex> lock(dataMutex);
 				cout << "Name\tx\ty\n";
@@ -131,6 +168,33 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 				}
 				break;
 			}
+			case 11: {
+				// Знайти шлях і помітити ребра, які в ньому
+				{
+					lock_guard<mutex> lock(dataMutex);
+					// Перед запуском алгоритму скидaємо позначки isInPath у всіх ліній
+					for (auto& l : lines) {
+						l.setIsInPath(false);
+					}
+				}
+
+				// Викликаємо алгоритм без блокування на тривалий час (findShortestPath може читати контейнер)
+				// Якщо findShortestPath потребує консистентності, можна тримати lock під час виклику.
+				double path;
+				{
+					lock_guard<mutex> lock(dataMutex);
+					path = findShortestPath(points, lines);
+				}
+
+				if (path == 0) {
+					cout << "No path found" << endl;
+					break;
+				}
+
+				cout << "Shortest path found with total weight: " << path << endl;
+				break;
+			}
+
             case 0: {
                 isRunning = false;
                 cout << "Exiting console loop...\n";

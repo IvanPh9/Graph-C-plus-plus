@@ -8,7 +8,7 @@
 #include "Point.h"
 #include "Line.h"
 
-bool loadPointsFromFile(const std::string& filename, std::vector<Point>& points);
+bool loadPointsFromFile(const std::string& filename, std::vector<Point>& points, std::vector<Line>& lines);
 bool loadLinesFromFile(const std::string& filename, std::vector<Line>& lines, std::vector<Point>& points);
 
 #endif
