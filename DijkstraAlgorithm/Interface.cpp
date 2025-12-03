@@ -16,6 +16,42 @@ mutex dataMutex;
 atomic<bool> isRunning(true);
 int ANIMATION_DELAY = 0;
 
+void cleanWorkspace(vector<Point>& points, vector<Line>& lines) {
+	lock_guard<mutex> lock(dataMutex);
+	for (auto& l : lines) {
+		l.setIsInPath(false);
+	}
+	for (auto& p : points) {
+		if (p.getIsStartPoint() || p.getIsEndPoint()) continue;
+		p.setColor(sf::Color(210, 210, 210), true);
+	}
+}
+
+bool deletePointByName(const string& name, vector<Point>& points, vector<Line>& lines) {
+	auto it = remove_if(points.begin(), points.end(),
+		[&name](const Point& p) { return p.getName() == name; });
+	if (it != points.end()) {
+		points.erase(it, points.end());
+		lines.erase(remove_if(lines.begin(), lines.end(),
+			[&name](const Line& l) {
+				return l.getStart().getName() == name || l.getEnd().getName() == name;
+			}), lines.end());
+		return true;
+	}
+	return false;
+}
+
+void deleteLineByPoints(const string& startName, const string& endName, vector<Line>& lines) {
+	auto it = remove_if(lines.begin(), lines.end(),
+		[&startName, &endName](const Line& l) {
+			return (l.getStart().getName() == startName && l.getEnd().getName() == endName) ||
+				(l.getStart().getName() == endName && l.getEnd().getName() == startName);
+		});
+	if (it != lines.end()) {
+		lines.erase(it, lines.end());
+	}
+}
+
 void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 {
     while (isRunning) {
@@ -43,7 +79,13 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
         cout << "Enter command: ";
 
         int command;
-        cin >> command;
+		if (!(cin >> command)) {
+			cin.clear(); // clear the error flag
+			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+			cout << "Invalid input. Please enter a number corresponding to a command." << endl;
+			continue;
+		}
+
         switch(command) {
 			case 1: {
 				lock_guard<mutex> lock(dataMutex);
@@ -77,6 +119,7 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 			}
             case 3: {
                 lock_guard<mutex> lock(dataMutex);
+				cleanWorkspace(points, lines);
 				Point newPoint(0.0, 0.0, "");
 				cout << "Enter point x y name: ";
 				cin >> newPoint;
@@ -88,6 +131,7 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
             }
             case 4: {
 				lock_guard<mutex> lock(dataMutex);
+				cleanWorkspace(points, lines);
 				double weight;
 				cout << "Enter start point name, end point name and weight: ";
 				string startName, endName;
@@ -117,6 +161,7 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 			}
 			case 5: {
 				lock_guard<mutex> lock(dataMutex);
+				cleanWorkspace(points, lines);
 				cout << "Enter start point name: ";
 				string startName;
 				cin >> startName;
@@ -135,6 +180,7 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 			}
 			case 6: {
 				lock_guard<mutex> lock(dataMutex);
+				cleanWorkspace(points, lines);
 				cout << "Enter end point name: ";
 				string endName;
 				cin >> endName;
@@ -169,27 +215,39 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 				}
 				break;
 			}
+			case 9: {
+				lock_guard<mutex> lock(dataMutex);
+				cleanWorkspace(points, lines);
+				cout << "Enter point name to delete: ";
+				string pointName;
+				cin >> pointName;
+				if (deletePointByName(pointName, points, lines)) cout << "Point and its connected lines deleted successfully." << endl;
+				else cout << "No such point found." << endl;
+				break;
+			}
+			case 10: {
+				lock_guard<mutex> lock(dataMutex);
+				cleanWorkspace(points, lines);
+				cout << "Enter start point name and end point name of line to delete: ";
+				string startName, endName;
+				cin >> startName >> endName;
+				if (deleteLineByPoints(startName, endName, lines), true) cout << "Line deleted successfully." << endl;
+				else cout << "No such line found." << endl;
+				break;
+			}
 			case 11: {
-				// Знайти шлях і помітити ребра, які в ньому
-				{
-					lock_guard<mutex> lock(dataMutex);
-					// Перед запуском алгоритму скидaємо позначки isInPath у всіх ліній
-					for (auto& l : lines) {
-						l.setIsInPath(false);
-					}
-				}
 
-				// Викликаємо алгоритм без блокування на тривалий час (findShortestPath може читати контейнер)
-				// Якщо findShortestPath потребує консистентності, можна тримати lock під час виклику.
-				double path;
-				path = findShortestPath(points, lines);
+				cleanWorkspace(points, lines);
 
-				if (path == 0) {
+				cout << "Finding shortest path...\n";
+				auto [s, p] = findShortestPath(points, lines);
+
+				if (p == 0) {
 					cout << "No path found" << endl;
 					break;
 				}
-
-				cout << "Shortest path found with total weight: " << path << endl;
+				cout << "Shortest path: " << s << endl;
+				cout << "Shortest path found with total weight: " << p << endl;
 				break;
 			}
 
@@ -231,7 +289,9 @@ void MainInterface(std::vector<Point>& points, std::vector<Line>& lines)
 				break;
 			}
             default:
+
 				cout << "Invalid command. Please try again.\n";
+				break;
         }
       
     }
