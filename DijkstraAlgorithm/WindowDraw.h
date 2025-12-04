@@ -8,6 +8,7 @@
 #include "Point.h"
 #include "Line.h"
 
+// Global flags to control whether labels and edge weights are displayed
 extern bool LABEL_SHOW;
 extern bool WEIGHT_SHOW;
 
