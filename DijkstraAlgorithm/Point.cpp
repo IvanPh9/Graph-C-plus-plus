@@ -17,9 +17,9 @@ void Point::setIsEndPoint(bool isEnd)
 Point::Point(double x, double y, const string& name) : x(x), y(y), name(name), isStartPoint(false), isEndPoint(false)
 {
 	setColor();
-	setSize(10.0);
-	setOutlineColor(sf::Color::Black);
-	setOutlineSize(3);
+	setSize(SIZE_POINT);
+	setOutlineColor(OUTLINE_COLOR_POINT);
+	setOutlineSize(OUTLINE_SIZE_POINT);
 }
 
 Point::Point(const Point& p) : x(p.x), y(p.y), name(p.name), color(p.color), outlineColor(p.outlineColor), size(p.size), outlineSize(p.outlineSize), isStartPoint(p.isStartPoint), isEndPoint(p.isEndPoint) {}
@@ -27,8 +27,8 @@ Point::Point(const Point& p) : x(p.x), y(p.y), name(p.name), color(p.color), out
 void Point::setColor(const sf::Color& newColor, bool change) {
 	if (change) color = newColor;
 	else {
-		if (isEndPoint) color = sf::Color::Red;
-		else if (isStartPoint) color = sf::Color::Green;
-		else color = newColor;
+		if (isEndPoint) color = END_COLOR_POINT;
+		else if (isStartPoint) color = START_COLOR_POINT;
+		else color = BASE_COLOR_POINT;
 	}
 }

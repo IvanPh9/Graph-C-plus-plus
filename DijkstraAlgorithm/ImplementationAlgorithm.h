@@ -6,6 +6,8 @@
 #include "Point.h"
 #include "Line.h"
 
-std::pair<std::string, double> findShortestPath(const std::vector<Point>& points, const std::vector<Line>& lines);
+using namespace std;
+
+pair<string, double> findShortestPath(const vector<Point>& points, const vector<Line>& lines);
 
 #endif

@@ -17,7 +17,6 @@ atomic<bool> isRunning(true);
 int ANIMATION_DELAY = 0;
 
 void cleanWorkspace(vector<Point>& points, vector<Line>& lines) {
-	lock_guard<mutex> lock(dataMutex);
 	for (auto& l : lines) {
 		l.setIsInPath(false);
 	}

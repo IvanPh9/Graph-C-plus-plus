@@ -1,6 +1,18 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Point.h"
+
+#define BASE_COLOR_LINE sf::Color(110, 110, 110)
+#define ACTIVE_COLOR_LINE sf::Color(100, 150, 255)
+#define ACCEPT_COLOR_LINE sf::Color(80, 220, 120)
+#define REJECTED_COLOR_LINE sf::Color(255, 100, 100)
+#define IS_PATH_COLOR_LINE sf::Color::Red
+#define POSSIBLE_SOLUTION_COLOR_LINE sf::Color::Blue
+
+#define BASE_BOLDNESS_LINE 2
+#define ACTIVE_BOLDNESS_LINE 3
+#define IS_PATH_BOLDNESS_LINE 4
+
 class Line
 {
 private:
@@ -22,8 +34,8 @@ public:
 	void setStart(Point p) { start = p; }
 	void setEnd(Point p) { end = p; }
 	void setWeight(double w) { weight = w; }
-	void setColor(const sf::Color& newColor =sf::Color(110, 110, 110), bool change = false);
-	void setBoldness(double b = 2, bool change = false);
+	void setColor(const sf::Color& newColor = BASE_COLOR_LINE, bool change = false);
+	void setBoldness(double b = BASE_BOLDNESS_LINE, bool change = false);
 	void setIsInPath(bool inPath);
 
 	double calculateLength() const;

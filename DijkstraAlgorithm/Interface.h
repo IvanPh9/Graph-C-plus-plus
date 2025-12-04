@@ -9,10 +9,12 @@
 #include <mutex>
 #include <atomic>
 
+using namespace std;
+
 extern mutex dataMutex;
 extern int ANIMATION_DELAY;
 extern atomic<bool> isRunning;
 
-void MainInterface(std::vector<Point>& points, std::vector<Line>& lines);
+void MainInterface(vector<Point>& points, vector<Line>& lines);
 
 #endif

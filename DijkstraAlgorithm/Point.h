@@ -5,6 +5,18 @@
 
 using namespace std;
 
+#define BASE_COLOR_POINT sf::Color(210, 210, 210)
+#define ACTIVE_COLOR_POINT sf::Color(255, 200, 0)
+#define ANALYSE_COLOR_POINT sf::Color(120, 255, 150)
+#define POSSIBLE_SOLUTION_COLOR_POINT sf::Color::Yellow
+#define SOLUTION_COLOR_POINT sf::Color::Cyan
+#define START_COLOR_POINT sf::Color::Green
+#define END_COLOR_POINT sf::Color::Red
+#define OUTLINE_COLOR_POINT sf::Color::Black
+
+#define SIZE_POINT 10.0f
+#define OUTLINE_SIZE_POINT 3
+
 class Point
 {
 private:
@@ -33,7 +45,7 @@ public:
 	void setX(double newX) { x = newX; }
 	void setY(double newY) { y = newY; }
 	void setName(const string& newName) { name = newName; }
-	void setColor(const sf::Color& newColor = sf::Color(210, 210, 210), bool change=false);
+	void setColor(const sf::Color& newColor = BASE_COLOR_POINT, bool change=false);
 	void setOutlineColor(const sf::Color& newOutlineColor) { outlineColor = newOutlineColor; }
 	void setSize(double newSize) { size = newSize; }
 	void setOutlineSize(double newOutlineSize) { outlineSize = newOutlineSize; }

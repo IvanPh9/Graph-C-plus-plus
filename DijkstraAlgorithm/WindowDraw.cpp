@@ -69,8 +69,6 @@ ScaleInfo getScaleAndBounds(const std::vector<Point>& points, double windowSizeX
     rangeX = std::max(rangeX, 1.);
     rangeY = std::max(rangeY, 1.);
 
-    double targetViewSize = std::min(windowSizeX, windowSizeY) / 2.0;
-
     double scaleX = ((windowSizeX / 2.0) * paddingFactor) / (rangeX / 2.0);
     double scaleY = ((windowSizeY / 2.0) * paddingFactor) / (rangeY / 2.0);
 
