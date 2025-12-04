@@ -14,12 +14,12 @@ sf::Font globalFont;
 bool fontLoaded = false; // Lazy loading flag to ensure font is loaded only once
 
 // Visual offsets to prevent labels from overlapping the points
-float LABEL_OFFSET_X = 5.0f;
-float LABEL_OFFSET_Y = -5.0f;
+float LABEL_OFFSET_X = 7.0f;
+float LABEL_OFFSET_Y = -7.0f;
 
 // Base font sizes
-const unsigned int FONT_SIZE = 24;
-const unsigned int WEIGHT_FONT_SIZE = 20;
+const unsigned int FONT_SIZE = 20;
+const unsigned int WEIGHT_FONT_SIZE = 15;
 
 // Toggles for rendering optional elements
 bool LABEL_SHOW = true;
@@ -133,10 +133,6 @@ void drawPoints(const std::vector<Point>& points, sf::RenderWindow& window) {
     double sharedScaleY = scaleData.scaleY;
     double visualScale = scaleData.visualScale * 0.7; // Slightly reduce point size
 
-    // We must manually shift coordinates to the center of the screen
-    // because transformPoint returns coords relative to (0,0).
-    sf::Vector2f screenCenter(width / 2.0f, height / 2.0f);
-
     for (const auto& p : points) {
         // Calculate radius based on visual scale, clamping to min/max reasonable sizes
         float calculatedRadius = static_cast<float>(p.getSize() * visualScale);
@@ -154,7 +150,6 @@ void drawPoints(const std::vector<Point>& points, sf::RenderWindow& window) {
 
         // Get relative position and shift to screen center
         sf::Vector2f pos = transformPoint(p, scaleData, sharedScaleX, sharedScaleY);
-        pos += screenCenter;
 
         // Offset by radius so the point is centered exactly on the coordinate
         shape.setPosition(sf::Vector2f(pos.x - shape.getRadius(), pos.y - shape.getRadius()));
@@ -169,7 +164,6 @@ void drawLines(const std::vector<Line>& lines, const std::vector<Point>& points,
 
     double width = static_cast<double>(window.getSize().x);
     double height = static_cast<double>(window.getSize().y);
-    sf::Vector2f screenCenter(width / 2.0f, height / 2.0f);
 
     ScaleInfo scaleData = getScaleAndBounds(points, width, height);
     double sharedScaleX = scaleData.scaleX;
@@ -181,9 +175,6 @@ void drawLines(const std::vector<Line>& lines, const std::vector<Point>& points,
         sf::Vector2f startPos = transformPoint(line.getStart(), scaleData, sharedScaleX, sharedScaleY);
         sf::Vector2f endPos = transformPoint(line.getEnd(), scaleData, sharedScaleX, sharedScaleY);
 
-        // Shift to absolute screen coordinates
-        startPos += screenCenter;
-        endPos += screenCenter;
 
         // Calculate the vector from Start to End
         sf::Vector2f direction = endPos - startPos;
@@ -227,7 +218,6 @@ void drawLabels(const std::vector<Point>& points, sf::RenderWindow& window) {
 
     double width = static_cast<double>(window.getSize().x);
     double height = static_cast<double>(window.getSize().y);
-    sf::Vector2f screenCenter(width / 2.0f, height / 2.0f);
 
     ScaleInfo scaleData = getScaleAndBounds(points, width, height);
     double sharedScaleX = scaleData.scaleX;
@@ -238,7 +228,6 @@ void drawLabels(const std::vector<Point>& points, sf::RenderWindow& window) {
         if (p.getName().empty()) continue;
 
         sf::Vector2f pos = transformPoint(p, scaleData, sharedScaleX, sharedScaleY);
-        pos += screenCenter;
 
         sf::Text labelText(globalFont);
 
@@ -287,7 +276,6 @@ void drawEdgeWeights(const std::vector<Line>& lines, const std::vector<Point>& p
 
     double width = static_cast<double>(window.getSize().x);
     double height = static_cast<double>(window.getSize().y);
-    sf::Vector2f screenCenter(width / 2.0f, height / 2.0f);
 
     ScaleInfo scaleData = getScaleAndBounds(points, width, height);
     double sharedScaleX = scaleData.scaleX;
@@ -298,9 +286,6 @@ void drawEdgeWeights(const std::vector<Line>& lines, const std::vector<Point>& p
         // Calculate start and end positions
         sf::Vector2f startPos = transformPoint(line.getStart(), scaleData, sharedScaleX, sharedScaleY);
         sf::Vector2f endPos = transformPoint(line.getEnd(), scaleData, sharedScaleX, sharedScaleY);
-
-        startPos += screenCenter;
-        endPos += screenCenter;
 
         // Calculate the midpoint of the line to place the text
         sf::Vector2f centerPos;
