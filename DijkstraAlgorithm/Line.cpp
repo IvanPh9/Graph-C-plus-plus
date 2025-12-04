@@ -1,4 +1,5 @@
 #include "Line.h"
+#include <cmath>
 
 Line::Line(const Point& start, const Point& end, double weight) : start(start), end(end), weight(weight)
 {
@@ -38,3 +39,4 @@ double Line::calculateLength() const
 	double deltaY = end.getY() - start.getY();
 	return sqrt(deltaX * deltaX + deltaY * deltaY);
 }
+

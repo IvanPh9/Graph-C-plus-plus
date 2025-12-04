@@ -39,3 +39,16 @@ bool operator==(const Line& l1, const Line& l2)
 {
     return (l1.start == l2.start) && (l1.end == l2.end) && (l1.weight == l2.weight);
 }
+// Copy-assignment: do not (and cannot) rebind the const reference members `start` and `end`.
+// We only copy the assignable state from `other`.
+Line& Line::operator=(const Line& other)
+{
+    if (this != &other) {
+        // start and end are const references and must keep their original bindings.
+        weight = other.weight;
+        color = other.color;
+        boldness = other.boldness;
+        isInPath = other.isInPath;
+    }
+    return *this;
+}
