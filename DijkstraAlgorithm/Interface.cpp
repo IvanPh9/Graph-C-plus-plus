@@ -45,7 +45,6 @@ bool deletePointByName(const string& name, vector<Point>& points, vector<Line>& 
 		[&name](const Point& p) { return p.getName() == name; });
 
 	if (it != points.end()) {
-		points.erase(it, points.end());
 
 		// Remove all lines that touch this point
 		lines.erase(remove_if(lines.begin(), lines.end(),
@@ -53,6 +52,7 @@ bool deletePointByName(const string& name, vector<Point>& points, vector<Line>& 
 				return l.getStart().getName() == name || l.getEnd().getName() == name;
 			}), lines.end());
 
+		points.erase(it, points.end());
 		return true;
 	}
 	return false;
